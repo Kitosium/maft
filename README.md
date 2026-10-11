@@ -20,7 +20,7 @@ cp .env.example .env
 | `BACKEND_PORT` | backend port (default `8000`) |
 | `BACKEND_URL` | backend origin the frontend proxies to (default `http://localhost:8000`) |
 
-Add `${FRONTEND_URL}/` as an **Authorized redirect URI** in the [Google Cloud console](https://console.cloud.google.com/apis/credentials). Then push the schema and seed the database:
+Add `${FRONTEND_URL}/api/auth/callback` as an **Authorized redirect URI** in the [Google Cloud console](https://console.cloud.google.com/apis/credentials). Then push the schema and seed the database:
 
 ```sh
 npm run db:push
