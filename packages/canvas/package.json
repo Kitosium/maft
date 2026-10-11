@@ -1,0 +1,17 @@
+{
+  "name": "@maft/canvas",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Renderer canvas Maft: layout + paint cong thuc Toan hoc",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}

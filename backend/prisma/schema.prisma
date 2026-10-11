@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  googleId  String     @unique
+  email     String     @unique
+  name      String
+  avatar    String?
+  role      String     @default("USER")
+  createdAt DateTime   @default(now())
+  favorites Favorite[]
+  history   History[]
+}
+
+model Category {
+  id           String            @id @default(cuid())
+  parentId     String?
+  parent       Category?         @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children     Category[]        @relation("CategoryTree")
+  slug         String            @unique
+  name         String
+  icon         String
+  color        String
+  description  String            @default("")
+  order        Int               @default(0)
+  formulas     Formula[]
+  related      RelatedFormula[]
+  applications Application[]
+}
+
+model Formula {
+  id         String        @id @default(cuid())
+  categoryId String
+  category   Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title      String
+  group      String        @default("Cơ bản")
+  lines      FormulaLine[]
+  note       String?
+  condition  String?
+  example    String?
+  order      Int           @default(0)
+  published  Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  favorites  Favorite[]
+  history    History[]
+}
+
+model FormulaLine {
+  id        String  @id @default(cuid())
+  formulaId String
+  formula   Formula @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  latex     String
+  order     Int     @default(0)
+}
+
+model RelatedFormula {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  latex      String
+  order      Int      @default(0)
+}
+
+model Application {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title      String
+  order      Int      @default(0)
+}
+
+model Favorite {
+  userId    String
+  formulaId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formula   Formula  @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, formulaId])
+}
+
+model History {
+  id        String   @id @default(cuid())
+  userId    String
+  formulaId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formula   Formula  @relation(fields: [formulaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
