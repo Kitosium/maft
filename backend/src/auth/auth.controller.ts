@@ -27,7 +27,7 @@ export class AuthController {
     res.redirect(googleAuthUrl(state));
   }
 
-  @Get()
+  @Get("auth/callback")
   async callback(
     @Query("code") code: string | undefined,
     @Query("state") state: string | undefined,

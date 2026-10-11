@@ -30,7 +30,7 @@ const call = async (path, opts = {}) => {
   let r = null;
   for (let i = 0; i < 2; i++) {
     try {
-      const url = path === "/" ? `${BACKEND}/` : `${BACKEND}/api${path}`;
+      const url = `${BACKEND}/api${path}`;
       r = await fetch(url, init);
       break;
     } catch (e) {
@@ -70,8 +70,11 @@ const cleanup = async () => {
   await prisma.user.deleteMany({ where: { id: USER.id } });
 };
 
-const root = await call("/");
-ok("root", root.status === 200 && root.body?.ok === true);
+const cbLive = await call("/auth/callback");
+ok(
+  "auth callback liveness",
+  cbLive.status === 200 && cbLive.body?.ok === true,
+);
 
 const hlth = await call("/health");
 ok(

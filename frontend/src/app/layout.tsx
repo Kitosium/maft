@@ -11,13 +11,6 @@ export const metadata: Metadata = {
     "hình học... tra cứu nhanh với trình render canvas.",
 };
 
-const cbScript = `try{
-var p=location.search;
-if(p.indexOf("code=")>-1&&p.indexOf("state=")>-1){
-location.replace("${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000"}/?"+p.slice(1));
-}
-}catch(e){}`;
-
 const bootScript = `try{
 var q=new URLSearchParams(location.search).get("theme");
 var t=q||localStorage.getItem("maft-theme");
@@ -29,7 +22,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: cbScript }} />
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
       <body>

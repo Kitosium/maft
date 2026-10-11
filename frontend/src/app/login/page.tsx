@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { AUTH_BASE } from "../../lib/api";
 import { useApp } from "../../components/ui/Providers";
 import { useDocTitle } from "../../lib/title";
 
@@ -73,7 +72,7 @@ function LoginInner() {
         </div>
       ) : (
         <a
-          href={`${AUTH_BASE}/api/auth/google`}
+          href="/api/auth/google"
           className={
             "flex items-center justify-center gap-3 text-sm font-medium " +
               "px-5 py-3 border no-underline"

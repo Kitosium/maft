@@ -1,5 +1,3 @@
-export const AUTH_BASE = "http://localhost:8000";
-
 const req = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const r = await fetch(`/api${path}`, {
     credentials: "include",
