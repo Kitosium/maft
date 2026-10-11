@@ -1,5 +1,7 @@
 **MAFT** is a math formula library
 
+![Home Screenshots](screenshots/desktop/dark/home.png)
+
 ## 🔑 Setup
 
 Copy `.env.example` to `.env` and fill in your values:
