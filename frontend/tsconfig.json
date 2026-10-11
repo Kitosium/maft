@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@maft/canvas": [
+        "../packages/canvas/src/index.ts"
       ]
     }
   },
