@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev -p 3000",
+    "prebuild": "rm -rf .next",
     "build": "next build",
     "start": "next start -p 3000",
     "check": "node ../node_modules/typescript/bin/tsc -p tsconfig.json --noEmit"

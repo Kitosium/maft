@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { delJson, getJson } from "../../../lib/api";
-import { useDocTitle } from "../../../lib/title";
+import { delJson } from "../../../lib/api";
+import { cacheDrop } from "../../../lib/cache";
+import { useCachedGet } from "../../../hooks/useCachedGet";
+import { useDocTitle } from "../../../hooks/useDocTitle";
 import type { CategoryDetail, Formula } from "../../../types";
 import { FormulaCard } from "../../../components/formulas/Card";
 import { FormulaEditor } from "../../../components/formulas/Editor";
@@ -26,51 +28,30 @@ export default function CategoryPage() {
   const { user, favIds, toggleFav, tree, treeLoading } = useApp();
   const admin = user?.role === "ADMIN";
 
-  const [cat, setCat] = useState<CategoryDetail | null>(null);
-  const [rows, setRows] = useState<Formula[]>([]);
   const [tab, setTab] = useState("Tất cả");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [editor, setEditor] = useState<EditorState>(null);
   const [tick, setTick] = useState(0);
-  const [missing, setMissing] = useState(false);
-  const [loadCat, setLoadCat] = useState(true);
-  const [loadRows, setLoadRows] = useState(true);
+
+  const catPath = `/categories/${slug}`;
+  const rowsPath = `/formulas?category=${slug}`;
+  const catQ = useCachedGet<CategoryDetail>(catPath, tick);
+  const rowsQ = useCachedGet<Formula[]>(rowsPath, tick);
+  const cat = catQ.data;
+  const rows = rowsQ.data ?? [];
+  const missing = catQ.error;
   useDocTitle(cat ? cat.name : null);
 
   useEffect(() => {
     setTab("Tất cả");
     setEditor(null);
-    setCat(null);
-    setMissing(false);
-    setLoadCat(true);
-    setLoadRows(true);
-    let live = true;
-    getJson<CategoryDetail>(`/categories/${slug}`)
-      .then((c) => {
-        if (live) setCat(c);
-      })
-      .catch(() => {
-        if (live) setMissing(true);
-      })
-      .finally(() => {
-        if (live) setLoadCat(false);
-      });
-    getJson<Formula[]>(`/formulas?category=${slug}`)
-      .then((r) => {
-        if (live) setRows(r);
-      })
-      .catch(() => {
-        if (live) setRows([]);
-      })
-      .finally(() => {
-        if (live) setLoadRows(false);
-      });
-    return () => {
-      live = false;
-    };
   }, [slug, tick]);
 
-  const reload = useCallback(() => setTick((n) => n + 1), []);
+  const reload = useCallback(() => {
+    cacheDrop(catPath);
+    cacheDrop(rowsPath);
+    setTick((n) => n + 1);
+  }, [catPath, rowsPath]);
   const parent = useMemo(() => {
     for (const r of tree) {
       if (r.children.some((c) => c.slug === slug)) return r;
@@ -106,7 +87,15 @@ export default function CategoryPage() {
     [rows, tab],
   );
   const expected = kids.length === 0 ? Math.min(node?.count ?? 0, 6) : 0;
-  const loading = loadCat || treeLoading || loadRows;
+  const loading = catQ.loading || treeLoading || rowsQ.loading;
+
+  useEffect(() => {
+    if (loading) return;
+    const id = window.location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [loading]);
 
   const remove = async (f: Formula): Promise<void> => {
     if (!window.confirm(`Xóa "${f.title}"?`)) return;
@@ -141,7 +130,7 @@ export default function CategoryPage() {
     <div className="flex flex-col gap-5 max-w-7xl">
       <CatHead
         cat={cat}
-        load={loadCat}
+        load={catQ.loading}
         parent={parent}
         admin={admin}
         onAdd={() => setEditor({ mode: "create" })}

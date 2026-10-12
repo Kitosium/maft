@@ -10,6 +10,8 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import { getJson, postJson } from "../../lib/api";
+import { cacheDropPrefix } from "../../lib/cache";
+import { useCachedGet } from "../../hooks/useCachedGet";
 import type { CategoryNode, User } from "../../types";
 
 export type Thm = { bg: string; lite: string; cnt: string; spc: string };
@@ -44,11 +46,13 @@ export const Providers = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState("dark");
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
-  const [tree, setTree] = useState<CategoryNode[]>([]);
-  const [treeLoading, setTreeLoading] = useState(true);
   const [favIds, setFavIds] = useState<Set<string>>(new Set());
   const [authTick, setAuthTick] = useState(0);
   const [treeTick, setTreeTick] = useState(0);
+
+  const treeQ = useCachedGet<CategoryNode[]>("/categories", treeTick);
+  const tree = treeQ.data ?? [];
+  const treeLoading = treeQ.loading;
 
   useEffect(() => {
     const cur = document.documentElement.dataset.theme;
@@ -82,22 +86,6 @@ export const Providers = ({ children }: { children: ReactNode }) => {
   }, [authTick]);
 
   useEffect(() => {
-    let live = true;
-    setTreeLoading(true);
-    getJson<CategoryNode[]>("/categories")
-      .then((t) => {
-        if (live) setTree(t);
-      })
-      .catch(() => setTree([]))
-      .finally(() => {
-        if (live) setTreeLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [treeTick]);
-
-  useEffect(() => {
     if (!user) {
       setFavIds(new Set());
       return;
@@ -118,6 +106,8 @@ export const Providers = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async () => {
     await postJson("/auth/logout");
+    cacheDropPrefix("/favorites");
+    cacheDropPrefix("/history");
     setUser(null);
   }, []);
 

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { FormulaCard } from "./Card";
 import { useApp } from "../ui/Providers";
-import { delJson, getJson } from "../../lib/api";
+import { delJson } from "../../lib/api";
+import { cacheDrop } from "../../lib/cache";
+import { useCachedGet } from "../../hooks/useCachedGet";
 import type { FavoriteItem, HistoryItem } from "../../types";
-import { useDocTitle } from "../../lib/title";
+import { useDocTitle } from "../../hooks/useDocTitle";
 import { CardSk, Sk } from "../ui/Skeleton";
 
 type P = { kind: "favorites" | "history" };
@@ -16,38 +18,23 @@ export function ListPage({ kind }: P) {
   const router = useRouter();
   const { user, booting, favIds, toggleFav } = useApp();
   const admin = user?.role === "ADMIN";
-  const [rows, setRows] = useState<(FavoriteItem | HistoryItem)[]>([]);
   const [tick, setTick] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   const path = kind === "favorites" ? "/favorites" : "/history";
   const title = kind === "favorites" ? "Yêu thích" : "Lịch sử";
   useDocTitle(title);
 
-  useEffect(() => {
-    if (!user) {
-      setRows([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    let live = true;
-    getJson<(FavoriteItem | HistoryItem)[]>(path)
-      .then((r) => {
-        if (live) setRows(r);
-      })
-      .catch(() => {
-        if (live) setRows([]);
-      })
-      .finally(() => {
-        if (live) setLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [path, user, tick]);
+  const { data, loading } = useCachedGet<(FavoriteItem | HistoryItem)[]>(
+    path,
+    tick,
+    !!user
+  );
+  const rows = data ?? [];
 
-  const reload = useCallback(() => setTick((n) => n + 1), []);
+  const reload = useCallback(() => {
+    cacheDrop(path);
+    setTick((n) => n + 1);
+  }, [path]);
 
   const remove = async (id: string, name: string): Promise<void> => {
     if (!window.confirm(`Xóa "${name}"?`)) return;

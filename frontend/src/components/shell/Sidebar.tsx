@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { CategoryNode } from "../../types";
 import { IcChevron, IcClock, IcHeart, IcHome } from "../ui/Icons";
+import { SidebarFormulas } from "./SidebarFormulas";
 import { useApp } from "../ui/Providers";
 import { SidebarSk } from "../ui/Skeleton";
 
@@ -33,11 +34,11 @@ type P = { open: boolean };
 export const Sidebar = ({ open }: P) => {
   const { tree, favIds, user, treeLoading } = useApp();
   const path = usePathname();
-  const [closed, setClosed] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const isAdmin = user?.role === "ADMIN";
 
   const toggle = (slug: string): void => {
-    setClosed((prev) => {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(slug)) next.delete(slug);
       else next.add(slug);
@@ -49,15 +50,15 @@ export const Sidebar = ({ open }: P) => {
 
   const renderNode = (n: CategoryNode): React.ReactNode => {
     const active = isActive(n.slug);
-    const hasKids = n.children.length > 0;
-    const open = hasKids && !closed.has(n.slug);
+    const expandable = n.children.length > 0 || n.count > 0;
+    const open = expandable && expanded.has(n.slug);
     return (
       <div key={n.slug}>
         <div
           className="relative flex items-center gap-1"
           style={active ? { background: "var(--hover)" } : undefined}
         >
-          {hasKids ? (
+          {expandable ? (
             <button
               type="button"
               onClick={() => toggle(n.slug)}
@@ -150,6 +151,7 @@ export const Sidebar = ({ open }: P) => {
                 </Link>
               );
             })}
+            <SidebarFormulas slug={n.slug} />
           </div>
         )}
       </div>

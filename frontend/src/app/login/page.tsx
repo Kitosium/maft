@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useApp } from "../../components/ui/Providers";
-import { useDocTitle } from "../../lib/title";
+import { useDocTitle } from "../../hooks/useDocTitle";
 
 const ERROR_TEXT: Record<string, string> = {
   state: "Phiên đăng nhập hết hạn hoặc không hợp lệ, vui lòng thử lại.",

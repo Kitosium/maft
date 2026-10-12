@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { IcSearch } from "../components/ui/Icons";
 import { useApp } from "../components/ui/Providers";
 import { CatSk } from "../components/ui/Skeleton";
-import { useDocTitle } from "../lib/title";
+import { useDocTitle } from "../hooks/useDocTitle";
 
 export default function HomePage() {
   const { tree, treeLoading } = useApp();

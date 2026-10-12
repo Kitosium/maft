@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { useDocTitle } from "../../lib/title";
+import { useDocTitle } from "../../hooks/useDocTitle";
 import { FormulaCard } from "../../components/formulas/Card";
 import { IcSearch } from "../../components/ui/Icons";
 import { useApp } from "../../components/ui/Providers";
 import { CardSk } from "../../components/ui/Skeleton";
-import { delJson, getJson } from "../../lib/api";
+import { delJson } from "../../lib/api";
+import { cacheDrop } from "../../lib/cache";
+import { useCachedGet } from "../../hooks/useCachedGet";
 import type { Formula } from "../../types";
 
 function SearchInner() {
@@ -18,37 +20,22 @@ function SearchInner() {
   const admin = user?.role === "ADMIN";
   const initial = sp.get("q") ?? "";
   const [q, setQ] = useState(initial);
-  const [rows, setRows] = useState<Formula[]>([]);
   const [tick, setTick] = useState(0);
-  const [loading, setLoading] = useState(false);
   useDocTitle("Tìm kiếm");
+
+  const term = initial.trim();
+  const path = `/formulas?q=${encodeURIComponent(term)}`;
+  const { data, loading } = useCachedGet<Formula[]>(path, tick, !!term);
+  const rows = data ?? [];
 
   useEffect(() => {
     setQ(initial);
-    let live = true;
-    const term = initial.trim();
-    if (!term) {
-      setRows([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    getJson<Formula[]>(`/formulas?q=${encodeURIComponent(term)}`)
-      .then((r) => {
-        if (live) setRows(r);
-      })
-      .catch(() => {
-        if (live) setRows([]);
-      })
-      .finally(() => {
-        if (live) setLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [initial, tick]);
+  }, [initial]);
 
-  const reload = useCallback(() => setTick((n) => n + 1), []);
+  const reload = useCallback(() => {
+    cacheDrop(path);
+    setTick((n) => n + 1);
+  }, [path]);
 
   const remove = async (f: Formula): Promise<void> => {
     if (!window.confirm(`Xóa "${f.title}"?`)) return;

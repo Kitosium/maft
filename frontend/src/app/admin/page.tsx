@@ -6,7 +6,7 @@ import { IcPlus, IcTrash } from "../../components/ui/Icons";
 import { useApp } from "../../components/ui/Providers";
 import { delJson, getJson } from "../../lib/api";
 import type { CategoryDetail, CategoryNode } from "../../types";
-import { useDocTitle } from "../../lib/title";
+import { useDocTitle } from "../../hooks/useDocTitle";
 import { CategoryForm, type CategoryRow } from "../../components/admin/Form";
 
 const flatten = (
