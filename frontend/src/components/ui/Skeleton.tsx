@@ -80,13 +80,6 @@ export const SidebarSk = () => (
             <Sk className="w-4 h-3 shrink-0" />
           </div>
         </div>
-        {i === 0 &&
-          Array.from({ length: 2 }, (_, j) => (
-            <div key={j} className="flex items-center gap-2 py-1.5 pl-9 pr-1">
-              <Sk className="h-3 flex-1" />
-              <Sk className="w-4 h-3 shrink-0" />
-            </div>
-          ))}
       </div>
     ))}
   </div>
