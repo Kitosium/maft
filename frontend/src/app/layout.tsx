@@ -6,9 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Maft",
-  description:
-    "Thư viện công thức Toán học: đại số, hàm số, giải tích, " +
-    "hình học... tra cứu nhanh với trình render canvas.",
+  description: "Maft - Project No.1 - Dự án MA"
 };
 
 const bootScript = `try{
